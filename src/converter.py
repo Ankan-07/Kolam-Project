@@ -54,12 +54,30 @@ class PNGtoSVGConverter:
 
     def _contour_to_svg_path(self, contour: np.ndarray) -> str:
         """Converts an OpenCV contour into an SVG path data string."""
-        points = contour.squeeze()
-        if len(points) == 0: return ""
+        # Handle different contour shapes safely
+        if contour.shape[0] == 0:
+            return ""
+            
+        # Only squeeze if the contour has the right dimensions
+        if len(contour.shape) > 2:
+            points = contour.squeeze()
+        else:
+            points = contour
+            
+        if len(points) == 0:
+            return ""
         
-        path_data = f"M {points[0][0]},{points[0][1]} "
-        path_data += " ".join([f"L {p[0]},{p[1]}" for p in points[1:]])
-        path_data += " Z"
+        # Ensure points have the right shape for indexing
+        if len(points.shape) == 1 and points.shape[0] >= 2:
+            # Single point case
+            path_data = f"M {points[0]},{points[1]} "
+            path_data += " Z"
+        else:
+            # Multiple points case
+            path_data = f"M {points[0][0]},{points[0][1]} "
+            path_data += " ".join([f"L {p[0]},{p[1]}" for p in points[1:]])
+            path_data += " Z"
+            
         return path_data
 
     def _generate_svg_content(self, regions: dict) -> str:
