@@ -9,8 +9,8 @@
             180
         ],
         "primary_shapes": [
-            "stars",
-            "lotus"
+            "lotus",
+            "stars"
         ],
         "average_complexity": 30.860450009644588,
         "continuity_preference": 0.3,
