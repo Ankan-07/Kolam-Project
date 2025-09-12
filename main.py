@@ -51,7 +51,8 @@ def analyze_kolams():
 
 def generate_artwork():
     """
-    Loads the analysis results and generates a new, artistic Kolam design.
+    Loads the analysis results and generates a new, artistic Kolam design
+    in black and white.
     """
     print("\n--- Starting Artistic Kolam Generation ---")
     
@@ -64,7 +65,7 @@ def generate_artwork():
         return
 
     generator = ArtisticKolamGenerator(analysis_file)
-    artistic_kolam = generator.generate(palette_name="rangoli")
+    artistic_kolam = generator.generate()
 
     output_path = os.path.join(ARTWORK_OUTPUT_DIR, "artistic_kolam_final.png")
     cv2.imwrite(output_path, artistic_kolam)
@@ -97,7 +98,7 @@ def convert_to_svg():
 if __name__ == "__main__":
     # This creates the command-line interface for your project
     parser = argparse.ArgumentParser(description="A complete pipeline for Kolam analysis and artistic generation.")
-    parser.add_argument('action', choices=['analyze', 'generate', 'convert'], help="Choose an action: 'analyze' input images, 'generate' a new artwork, or 'convert' the artwork to SVG.")
+    parser.add_argument('action', choices=['analyze', 'generate', 'convert'], help="Choose an action: 'analyze' input images, 'generate' a new black and white artwork, or 'convert' the artwork to SVG.")
     
     args = parser.parse_args()
 
