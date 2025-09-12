@@ -13,6 +13,7 @@ output_analysis/collective_analysis_results.json
 
 # Output artworks
 output_artworks/artistic_kolam_final.png
+output_artworks/artistic_kolam_final.svg
 
 # OS generated files
 desktop.ini
