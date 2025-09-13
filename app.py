@@ -129,7 +129,7 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="blue", secondary_hue="pink")) a
     gr.Markdown("---")
     gr.Markdown("## Check if Generated Kolam is Valid")
     check_btn = gr.Button("Check Generated Kolam")
-    check_result = gr.Textbox(label="Kolam Check Result")
+    check_result = gr.Textbox(label="Kolam Check Result", lines=6)
     check_btn.click(fn=check_if_kolam, inputs=None, outputs=check_result)
 
     demo.launch(share=True)

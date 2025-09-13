@@ -9,10 +9,10 @@
             180
         ],
         "primary_shapes": [
-            "stars",
-            "lotus"
+            "lotus",
+            "stars"
         ],
-        "average_complexity": 33.68080955440711,
+        "average_complexity": 33.269527747393575,
         "continuity_preference": 0.3,
         "dominant_style": "Sikku",
         "style_mixture": {
