@@ -6,17 +6,13 @@
             7
         ],
         "common_symmetries": [
-            90,
             180
         ],
         "primary_shapes": [
-            "stars",
-            "lotus"
+            "lotus",
+            "stars"
         ],
-        "average_complexity": {
-            "local": 40.62317150524021,
-            "remote": 30.860450009644588
-        },
+        "average_complexity": 31.4624633572939,
         "continuity_preference": 0.3,
         "dominant_style": "Sikku",
         "style_mixture": {
