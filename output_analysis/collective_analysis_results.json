@@ -13,7 +13,10 @@
             "stars",
             "lotus"
         ],
-        "average_complexity": 40.62317150524021,
+        "average_complexity": {
+            "local": 40.62317150524021,
+            "remote": 30.860450009644588
+        },
         "continuity_preference": 0.3,
         "dominant_style": "Sikku",
         "style_mixture": {

@@ -1,0 +1,19 @@
+# Python virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Input Kolams
+input_kolams/*.png
+
+# Output analysis
+output_analysis/collective_analysis_results.json
+
+# Output artworks
+output_artworks/artistic_kolam_final.png
+output_artworks/artistic_kolam_final.svg
+
+# OS generated files
+desktop.ini

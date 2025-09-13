@@ -55,30 +55,30 @@ class ArtisticKolamGenerator:
             self.principles = self._get_default_principles()
         self.height, self.width = 1000, 1000
 
-    def generate(self, palette_name: str = "peacock") -> np.ndarray:
+    def generate(self) -> np.ndarray:
         """
         The main method to generate a new, artistic Kolam from scratch.
-        Optimized for better computational efficiency.
+        Always generates a black and white Kolam for traditional aesthetic.
         """
         print("\n🎨 Generating new artistic Kolam...")
-        
-        # Cache the palette to avoid repeated dictionary lookups
-        palette = self.PALETTES.get(palette_name, self.PALETTES["peacock"])
         
         # Generate the basic structure
         dots, spacing = self._generate_grid()
         structure_mask = self._generate_new_structure(dots, spacing)
         
-        # Create the background once
-        canvas = self._create_textured_background()
+        # Create a white background
+        canvas = np.full((self.height, self.width, 3), 255, dtype=np.uint8)
         
-        # Fill regions and add embellishments
-        filled_canvas, regions = self._fill_regions_with_gradients(canvas, structure_mask, palette)
-        embellished_canvas = self._add_internal_embellishments(filled_canvas, regions, palette)
+        # Draw the structure in black
+        final_canvas = self._draw_artistic_lines(canvas, structure_mask, line_color=(0, 0, 0))
         
-        # Draw lines and border
-        final_canvas = self._draw_artistic_lines(embellished_canvas, structure_mask)
-        self._draw_ornate_border(final_canvas, palette)
+        # Add a simple black border
+        border_thickness = int(min(self.width, self.height) * 0.01)  # 1% of size
+        final_canvas = cv2.rectangle(final_canvas, 
+                                   (border_thickness, border_thickness), 
+                                   (self.width - border_thickness, self.height - border_thickness), 
+                                   (0, 0, 0), 
+                                   border_thickness)
         
         print("✨ Generation complete!")
         return final_canvas
@@ -486,20 +486,30 @@ class ArtisticKolamGenerator:
         
         return canvas
 
-    def _draw_artistic_lines(self, canvas: np.ndarray, structure_mask: np.ndarray):
-        """Draws more intricate and artistic lines for the Kolam pattern."""
+    def _draw_artistic_lines(self, canvas: np.ndarray, structure_mask: np.ndarray, line_color: tuple = (40, 30, 20)):
+        """
+        Draws more intricate and artistic lines for the Kolam pattern.
+        
+        Args:
+            canvas: The canvas to draw on
+            structure_mask: The binary mask defining the structure
+            line_color: The color to use for drawing lines (default: dark brown)
+        """
         # Extract contours from the structure mask
         contours, hierarchy = cv2.findContours(structure_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if not contours: return canvas
         
-        # Create a shadow effect for depth
-        shadow_canvas = np.zeros_like(canvas)
-        shadow_color = (40, 30, 20)
-        
-        # Draw thicker shadow lines
-        cv2.polylines(shadow_canvas, contours, isClosed=False, color=shadow_color, thickness=12, lineType=cv2.LINE_AA)
-        shadow_canvas = cv2.GaussianBlur(shadow_canvas, (21, 21), 0)
-        canvas = cv2.addWeighted(canvas, 1, shadow_canvas, 0.3, 0)
+        if line_color == (0, 0, 0):
+            # For black and white mode, just draw the lines directly
+            cv2.polylines(canvas, contours, isClosed=False, color=line_color, thickness=2, lineType=cv2.LINE_AA)
+        else:
+            # Create a shadow effect for depth
+            shadow_canvas = np.zeros_like(canvas)
+            
+            # Draw thicker shadow lines
+            cv2.polylines(shadow_canvas, contours, isClosed=False, color=line_color, thickness=12, lineType=cv2.LINE_AA)
+            shadow_canvas = cv2.GaussianBlur(shadow_canvas, (21, 21), 0)
+            canvas = cv2.addWeighted(canvas, 1, shadow_canvas, 0.3, 0)
         
         # Draw the main lines with a textured effect
         line_color = (255, 250, 245)
