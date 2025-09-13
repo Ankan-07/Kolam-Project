@@ -8,6 +8,7 @@ from src.generator import ArtisticKolamGenerator
 INPUT_DIR = "input_kolams"
 ANALYSIS_OUTPUT_DIR = "output_analysis"
 ARTWORK_OUTPUT_DIR = "output_artworks"
+GENERATED_KOLAM_PATH = os.path.join(ARTWORK_OUTPUT_DIR, "artistic_kolam_final.png")
 
 os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(ANALYSIS_OUTPUT_DIR, exist_ok=True)
@@ -41,17 +42,66 @@ def analyze_and_generate(images):
     cv2.imwrite(output_path, artistic_kolam)
     return output_path, "Artistic Kolam generated successfully!"
 
-def check_if_kolam(image):
-    # Dummy check: Use DesignAnalyzer to check if image is a kolam
-    # (Replace with your own logic if needed)
-    # image is a numpy array (from gr.Image)
-    temp_path = os.path.join(INPUT_DIR, "check_kolam.png")
-    cv2.imwrite(temp_path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-    analyzer = DesignAnalyzer()
-    result = analyzer.is_kolam(temp_path) if hasattr(analyzer, 'is_kolam') else None
-    if result is None:
-        return "Kolam check function not implemented."
-    return "This is a Kolam!" if result else "This is NOT a Kolam."
+def is_symmetric(img, threshold=0.85):
+    # Check vertical and horizontal symmetry
+    height, width = img.shape[:2]
+    left = img[:, :width//2]
+    right = cv2.flip(img[:, width//2:], 1)
+    right = cv2.resize(right, (left.shape[1], left.shape[0]))
+    
+    # Compare left and right halves
+    similarity = cv2.matchTemplate(left, right, cv2.TM_CCOEFF_NORMED)[0][0]
+    return similarity > threshold
+
+def has_dot_pattern(img, min_dots=5):
+    # Convert to grayscale if not already
+    if len(img.shape) == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = img
+    
+    # Detect dots using blob detection
+    params = cv2.SimpleBlobDetector_Params()
+    params.filterByArea = True
+    params.minArea = 5
+    params.maxArea = 100
+    params.filterByCircularity = True
+    params.minCircularity = 0.7
+    
+    detector = cv2.SimpleBlobDetector_create(params)
+    keypoints = detector.detect(gray)
+    
+    return len(keypoints) >= min_dots
+
+def check_if_kolam():
+    if not os.path.exists(GENERATED_KOLAM_PATH):
+        return "No generated Kolam found. Please generate a Kolam first."
+    
+    # Read the image
+    img = cv2.imread(GENERATED_KOLAM_PATH)
+    if img is None:
+        return "Error reading the generated Kolam image."
+    
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # Apply thresholding to get binary image
+    _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+    
+    # Check kolam characteristics
+    checks = {
+        "Symmetry": is_symmetric(binary),
+        "Dot Pattern": has_dot_pattern(binary)
+    }
+    
+    # Calculate confidence score
+    confidence = sum(1 for check in checks.values() if check) / len(checks)
+    
+    if confidence >= 0.5:
+        details = "\n".join([f"- {k}: {'✓' if v else '✗'}" for k, v in checks.items()])
+        return f"This appears to be a Kolam! (Confidence: {confidence*100:.1f}%)\n\nDetails:\n{details}"
+    else:
+        return f"This doesn't appear to be a valid Kolam. (Confidence: {confidence*100:.1f}%)"
 
 with gr.Blocks(theme=gr.themes.Soft(primary_hue="blue", secondary_hue="pink")) as demo:
     gr.Markdown("# Kolam Analyzer & Generator\nUpload at least 3 Kolam images to analyze and generate a new one.")
@@ -62,10 +112,9 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="blue", secondary_hue="pink")) a
     status = gr.Textbox(label="Status Message")
     analyze_btn.click(fn=analyze_and_generate, inputs=image_input, outputs=[output_image, status])
     gr.Markdown("---")
-    gr.Markdown("## Check if Image is a Kolam")
-    check_image = gr.Image(label="Upload Image to Check")
-    check_btn = gr.Button("Check if Kolam")
+    gr.Markdown("## Check if Generated Kolam is Valid")
+    check_btn = gr.Button("Check Generated Kolam")
     check_result = gr.Textbox(label="Kolam Check Result")
-    check_btn.click(fn=check_if_kolam, inputs=check_image, outputs=check_result)
+    check_btn.click(fn=check_if_kolam, inputs=None, outputs=check_result)
 
 demo.launch(share=True)
